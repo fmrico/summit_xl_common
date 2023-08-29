@@ -12,20 +12,24 @@
 	<xacro:include filename="$(find summit_xl_description)/urdf/bases/summit_xl_hls_base.urdf.xacro" />
 
 	<!-- Import summit XL wheels -->
-	<xacro:include filename="$(find summit_xl_description)/urdf/wheels/omni_wheel.urdf.xacro" />
 	<xacro:include filename="$(find summit_xl_description)/urdf/wheels/basic_wheel.urdf.xacro" />
 	<xacro:include filename="$(find summit_xl_description)/urdf/structures/structure_hokuyo.urdf.xacro" />
 
 	<!-- Import all available sensors -->
 	<xacro:include filename="$(find robotnik_sensors)/urdf/all_sensors.urdf.xacro" />
+	<xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro" />
 
 	<xacro:property name="PI" value="3.1415926535897931"/>
 
 	<!-- Wheel parameters -->
 	<!-- Wheel parameters -->
-	<xacro:property name="wheel_offset_x" value="0.2225" />    <!-- x,y,z in translation from base_link to the center of the wheel -->
-	<xacro:property name="wheel_offset_y" value="0.2045" />
+	<xacro:property name="wheel_offset_x" value="0.229" />    <!-- x,y,z in translation from base_link to the center of the wheel -->
+	<xacro:property name="wheel_offset_y" value="0.235" />
 	<xacro:property name="wheel_offset_z" value="0.0" />
+	<xacro:property name="wheel_radius" value="0.1025" />
+	<xacro:property name="wheel_height" value="0.14" />
+	<xacro:property name="wheel_mass" value="0.5" />
+
 
 	<xacro:property name="front_laser_offset_x" value="0.356"/>	
 	<xacro:property name="front_laser_offset_y" value="-0.251"/>
@@ -75,21 +79,22 @@
 		<!-- Summit XL base -->
 		<xacro:summit_xl_hls_base prefix="$(arg prefix)" publish_bf="true" hq="${hq}" />
 
-		<xacro:omni_wheel prefix="$(arg prefix)front_right" parent="$(arg prefix)base_link" reflect="false" hq="${hq}">
-			<origin xyz="${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
-		</xacro:omni_wheel>
+  		<xacro:basic_wheel prefix="$(arg prefix)front_right" parent="$(arg prefix)base_link" radius="${wheel_radius}" height="${wheel_height}" mass="${wheel_height}">
+  			<origin xyz="${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+  		</xacro:basic_wheel>
 
-		<xacro:omni_wheel prefix="$(arg prefix)front_left" parent="$(arg prefix)base_link" reflect="true" hq="${hq}">
-			<origin xyz="${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
-		</xacro:omni_wheel>
+  		<xacro:basic_wheel prefix="$(arg prefix)front_left" parent="$(arg prefix)base_link" radius="${wheel_radius}" height="${wheel_height}" mass="${wheel_height}">
+  			<origin xyz="${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+  		</xacro:basic_wheel>
 
-		<xacro:omni_wheel prefix="$(arg prefix)rear_left" parent="$(arg prefix)base_link" reflect="true" hq="${hq}">
-			<origin xyz="-${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
-		</xacro:omni_wheel>
+  		<xacro:basic_wheel prefix="$(arg prefix)back_left" parent="$(arg prefix)base_link" radius="${wheel_radius}" height="${wheel_height}" mass="${wheel_height}">
+  			<origin xyz="-${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+  		</xacro:basic_wheel>
 
-		<xacro:omni_wheel prefix="$(arg prefix)rear_right" parent="$(arg prefix)base_link" reflect="false" hq="${hq}">
-			<origin xyz="-${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
-		</xacro:omni_wheel>
+  		<xacro:basic_wheel prefix="$(arg prefix)back_right" parent="$(arg prefix)base_link" radius="${wheel_radius}" height="${wheel_height}" mass="${wheel_height}">
+  			<origin xyz="-${wheel_offset_x} -${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+  		</xacro:basic_wheel>
+
         <!-- IMU -->
 		<xacro:sensor_imu_hector prefix="$(arg prefix)imu" ns="$(arg robot_ns)" parent="$(arg prefix)base_link">
 			<origin xyz="${imu_offset_x} ${imu_offset_y} ${imu_offset_z}" rpy="0 0 0"/>
@@ -98,12 +103,13 @@
 
 		<!-- SENSORS -->
 		<xacro:sensor_hokuyo_ust20lx ns="" prefix="front_laser" parent="base_link">
-			<origin xyz="${front_laser_offset_x} ${front_laser_offset_y} ${front_laser_offset_z}" rpy="0 ${-PI} ${3/4*PI}" />
-  		</xacro:sensor_hokuyo_ust20lx>
+			<!--origin xyz="${front_laser_offset_x} ${front_laser_offset_y} ${front_laser_offset_z}" rpy="0 ${-PI} ${3/4*PI}" /-->
+			<origin xyz="-0.11808 0.0 0.25" rpy="0 0 0"/>
+		</xacro:sensor_hokuyo_ust20lx>
 
-        <xacro:sensor_hokuyo_ust20lx ns="" prefix="rear_laser" parent="base_link">
+    <!--xacro:sensor_hokuyo_ust20lx ns="" prefix="rear_laser" parent="base_link">
 			<origin xyz="${rear_laser_offset_x} ${rear_laser_offset_y} ${rear_laser_offset_z}" rpy="0 ${-PI} ${-1/4*PI}" />
-  		</xacro:sensor_hokuyo_ust20lx>
+  	</xacro:sensor_hokuyo_ust20lx-->
 
 
 		<!--xacro:sensor_axis_m5013 prefix="$(arg prefix)front_ptz_camera" parent="$(arg prefix)base_link">
@@ -115,13 +121,26 @@
 		</xacro:sensor_axis_m5013-->
 
 
-		<xacro:sensor_orbbec_astra prefix="$(arg prefix)front_rgbd_camera" parent="$(arg prefix)base_link" ns="$(arg robot_ns)">
+		<!--xacro:sensor_orbbec_astra prefix="$(arg prefix)front_rgbd_camera" parent="$(arg prefix)base_link" ns="$(arg robot_ns)">
 			<origin xyz="${front_rgbd_camera_offset_x} ${front_rgbd_camera_offset_y} ${front_rgbd_camera_offset_z}" rpy="0 0 0"/>
-		</xacro:sensor_orbbec_astra>
+		</xacro:sensor_orbbec_astra-->
 
 		<!--xacro:sensor_gps prefix="$(arg prefix)gps" parent="$(arg prefix)base_link">
 			<origin xyz="${gps_offset_x} ${gps_offset_y} ${gps_offset_z}" rpy="0 0 0"/>
 		</xacro:sensor_gps-->
+  <xacro:arg name="gpu" default="false"/>
+  <xacro:property name="gpu" value="$(arg gpu)" />
+  <xacro:arg name="organize_cloud" default="false"/>
+  <xacro:property name="organize_cloud" value="$(arg organize_cloud)" />
+
+	<xacro:VLP-16 parent="base_link" name="velodyne" topic="/velodyne_points" organize_cloud="${organize_cloud}" hz="10" samples="440" gpu="${gpu}">
+    <origin xyz="0 0 0.4" rpy="0 0 0" />
+  </xacro:VLP-16>
+
+
+		<!--xacro:VLP-16 ns=""  prefix="top_3d_laser" parent="base_link">
+			<origin xyz="-0.11808 0.0 0.32409" rpy="0 0 0"/>
+		</xacro:VLP-16cat -->
 
    </xacro:macro>
 
@@ -136,5 +155,11 @@
   <xacro:arg name="config_controllers" default=""/>
   <xacro:include filename="$(find summit_xl_description)/urdf/ros2_control.urdf.xacro"/>
   <xacro:ros2_control/>
-
+	
+	<gazebo>
+    <plugin name="gazebo_ros_mocap" filename="libgazebo_ros_mocap.so">
+      <model_name>robot</model_name>
+      <link_name>base_footprint</link_name>
+    </plugin>
+    </gazebo>
 </robot>

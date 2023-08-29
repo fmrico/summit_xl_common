@@ -59,6 +59,11 @@
     </collision>     
   </link>
 
+  <gazebo reference="${prefix}base_link">
+	  <plugin name="gazebo_ros_mocap" filename="libgazebo_ros_mocap.so">
+      <link_name>${prefix}base_link</link_name>
+    </plugin>
+	</gazebo>
 
   </xacro:macro>
 </robot>
